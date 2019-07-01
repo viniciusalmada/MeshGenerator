@@ -1,6 +1,6 @@
-import utils.WorldLimits
-import utils.plus
-import utils.times
+package com.viniciusalmada.meshgen
+
+import com.viniciusalmada.meshgen.utils.*
 import java.awt.*
 import java.awt.event.*
 import java.awt.geom.AffineTransform
@@ -25,7 +25,7 @@ class CanvasComponent(
         const val FIT_SCALE_FACTOR = 1.10
         const val ZOOM_IN_FACTOR = 0.95
         const val ZOOM_OUT_FACTOR = 1.05
-        const val TOLERANCE_MOUSE_MOVEMENT = 0.01
+        const val TOLERANCE_MOUSE_MOVEMENT = 0.015
     }
 
     private val mCurrentTransform = AffineTransform()
@@ -34,6 +34,7 @@ class CanvasComponent(
     private var isMidMouseButtonPressed = false
     private var mPointPressedInSpace = Point2D.Double()
     private var mCurrentMousePosition = Point2D.Double()
+    private var isCursorOnCanvas = false
     var isGridEnabled = false
     var isSnapEnabled = false
     var mGridX = 1.00
@@ -90,23 +91,30 @@ class CanvasComponent(
             displayGrid(g2)
         }
 
-        drawCursor(g2)
+        if (isCursorOnCanvas) {
+            drawCursor(g2)
+        }
 
         g2.transform(backupTransform)
         g2.dispose()
     }
 
     override fun mouseMoved(e: MouseEvent?) {
+        cursor = if (isCursorOnCanvas) {
+            getBlankCursor()
+        } else {
+            getDefaultCursor()
+        }
+
         if (e != null) {
             val pSrc = e.point
             val pDst = Point2D.Double()
             mCurrentTransform.inverseTransform(pSrc, pDst)
 
-            mCurrentMousePosition =
-                if (!isSnapEnabled)
-                    pDst
-                else
-                    round2Snap(pDst)
+            mCurrentMousePosition = if (!isSnapEnabled)
+                pDst
+            else
+                round2Snap(pDst)
 
             mAppFrame.updateCoordinates(mCurrentMousePosition.x, mCurrentMousePosition.y)
             repaint()
@@ -130,6 +138,7 @@ class CanvasComponent(
     }
 
     override fun mouseEntered(e: MouseEvent?) {
+        isCursorOnCanvas = true
     }
 
     override fun mouseClicked(e: MouseEvent?) {
@@ -139,6 +148,8 @@ class CanvasComponent(
     }
 
     override fun mouseExited(e: MouseEvent?) {
+        isCursorOnCanvas = false
+        repaint()
     }
 
     override fun mousePressed(e: MouseEvent?) {
@@ -271,8 +282,8 @@ class CanvasComponent(
         val x0 = mCurrentMousePosition.x
         val y0 = mCurrentMousePosition.y
         val rectCursor = Rectangle2D.Double(x0 - halfSide, y0 - halfSide, halfSide * 2.0, halfSide * 2.0)
-        val lineXCursor = Line2D.Double(x0 - halfSide, y0, x0 + halfSide, y0)
-        val lineYCursor = Line2D.Double(x0, y0 - halfSide, x0, y0 + halfSide)
+        val lineXCursor = Line2D.Double(x0 - halfSide * 2, y0, x0 + halfSide * 2, y0)
+        val lineYCursor = Line2D.Double(x0, y0 - halfSide * 2, x0, y0 + halfSide * 2)
         val paintBkp = g2.paint
         g2.paint = Color.RED
         g2.draw(rectCursor)

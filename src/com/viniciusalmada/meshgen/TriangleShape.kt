@@ -1,5 +1,6 @@
+package com.viniciusalmada.meshgen
+
 import java.awt.Polygon
-import java.awt.Shape
 
 class TriangleShape : Polygon() {
     init {

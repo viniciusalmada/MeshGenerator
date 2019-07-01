@@ -1,4 +1,4 @@
-package utils
+package com.viniciusalmada.meshgen.utils
 
 import java.awt.geom.Point2D
 

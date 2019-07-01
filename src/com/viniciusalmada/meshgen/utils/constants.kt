@@ -1,4 +1,4 @@
-package utils
+package com.viniciusalmada.meshgen.utils
 
 /* BUTTONS TITLES */
 const val FIT_BUTTON_TITLE = "Fit"

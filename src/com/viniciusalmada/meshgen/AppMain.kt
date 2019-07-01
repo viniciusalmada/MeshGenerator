@@ -1,3 +1,5 @@
+package com.viniciusalmada.meshgen
+
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 

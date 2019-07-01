@@ -1,3 +1,5 @@
+package com.viniciusalmada.meshgen
+
 import java.awt.Shape
 import java.awt.geom.Ellipse2D
 import java.awt.geom.QuadCurve2D

@@ -1,4 +1,6 @@
-import utils.*
+package com.viniciusalmada.meshgen
+
+import com.viniciusalmada.meshgen.utils.*
 import java.awt.*
 import java.awt.event.ActionListener
 import java.awt.event.ItemListener
