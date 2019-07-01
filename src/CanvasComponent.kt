@@ -9,6 +9,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
+import kotlin.math.roundToInt
 
 
 class CanvasComponent(
@@ -32,7 +33,7 @@ class CanvasComponent(
     private var isComponentReady = false
     private var isMidMouseButtonPressed = false
     private var mPointPressedInSpace = Point2D.Double()
-    private var mCurrentMousePosition = Point()
+    private var mCurrentMousePosition = Point2D.Double()
     var isGridEnabled = false
     var isSnapEnabled = false
     var mGridX = 1.00
@@ -89,7 +90,7 @@ class CanvasComponent(
             displayGrid(g2)
         }
 
-//        drawCursor(g2)
+        drawCursor(g2)
 
         g2.transform(backupTransform)
         g2.dispose()
@@ -100,10 +101,15 @@ class CanvasComponent(
             val pSrc = e.point
             val pDst = Point2D.Double()
             mCurrentTransform.inverseTransform(pSrc, pDst)
-            mAppFrame.updateCoordinates(pDst.x, pDst.y)
 
-//            mCurrentMousePosition = e.point
-//            repaint()
+            mCurrentMousePosition =
+                if (!isSnapEnabled)
+                    pDst
+                else
+                    round2Snap(pDst)
+
+            mAppFrame.updateCoordinates(mCurrentMousePosition.x, mCurrentMousePosition.y)
+            repaint()
         }
     }
 
@@ -183,18 +189,20 @@ class CanvasComponent(
 
         val sizeX = mLimits.width() * FIT_SCALE_FACTOR
         val sizeY = mLimits.height() * FIT_SCALE_FACTOR
+        val centerX = mLimits.width() / 2.0 + mLimits.left
+        val centerY = mLimits.height() / 2.0 + mLimits.bot
 
         val vprBox = sizeY / sizeX
         if (vpr <= vprBox) {
-            mLimits.left = mLimits.centerX() - (sizeY / vpr) / 2.0
-            mLimits.right = mLimits.centerX() + (sizeY / vpr) / 2.0
-            mLimits.bot = mLimits.centerY() - sizeY / 2.0
-            mLimits.top = mLimits.centerY() + sizeY / 2.0
+            mLimits.left = centerX - (sizeY / vpr) / 2.0
+            mLimits.right = centerX + (sizeY / vpr) / 2.0
+            mLimits.bot = centerY - sizeY / 2.0
+            mLimits.top = centerY + sizeY / 2.0
         } else {
-            mLimits.bot = mLimits.centerY() - (sizeX * vpr) / 2.0
-            mLimits.top = mLimits.centerY() + (sizeX * vpr) / 2.0
-            mLimits.right = mLimits.centerX() + (sizeX) / 2.0
-            mLimits.left = mLimits.centerX() - (sizeX) / 2.0
+            mLimits.bot = centerY - (sizeX * vpr) / 2.0
+            mLimits.top = centerY + (sizeX * vpr) / 2.0
+            mLimits.right = centerX + (sizeX) / 2.0
+            mLimits.left = centerX - (sizeX) / 2.0
         }
 
     }
@@ -260,13 +268,23 @@ class CanvasComponent(
 
     private fun drawCursor(g2: Graphics2D) {
         val halfSide = mLimits.maxDimension() * TOLERANCE_MOUSE_MOVEMENT / 2.0
-        val x0 = mCurrentMousePosition.x.toDouble()
-        val y0 = mCurrentMousePosition.y.toDouble()
+        val x0 = mCurrentMousePosition.x
+        val y0 = mCurrentMousePosition.y
         val rectCursor = Rectangle2D.Double(x0 - halfSide, y0 - halfSide, halfSide * 2.0, halfSide * 2.0)
+        val lineXCursor = Line2D.Double(x0 - halfSide, y0, x0 + halfSide, y0)
+        val lineYCursor = Line2D.Double(x0, y0 - halfSide, x0, y0 + halfSide)
         val paintBkp = g2.paint
-        g2.paint = Color.BLUE
-        g2.fill(rectCursor)
+        g2.paint = Color.RED
+        g2.draw(rectCursor)
+        g2.draw(lineXCursor)
+        g2.draw(lineYCursor)
         g2.paint = paintBkp
+    }
+
+    private fun round2Snap(pt: Point2D.Double): Point2D.Double {
+        val x0 = (pt.x / mGridX).roundToInt() * mGridX
+        val y0 = (pt.y / mGridY).roundToInt() * mGridY
+        return Point2D.Double(x0, y0)
     }
 
     fun fit() {
