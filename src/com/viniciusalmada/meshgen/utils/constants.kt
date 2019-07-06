@@ -10,6 +10,13 @@ const val PAN_DOWN_BUTTON_TITLE = "Pan Down"
 const val ZOOM_IN_BUTTON_TITLE = "Zoom In"
 const val GRID_BUTTON_TITLE = "Grid"
 const val CONFIRM_GRID_BUTTON_TITLE = "Ok"
+const val SELECT_BUTTON_TITLE = "Select"
+const val LINE_BUTTON_TITLE = "Line"
+const val POLYLINE_BUTTON_TITLE = "Polyline"
+const val QUAD_CURVE_BUTTON_TITLE = "QuadCurve"
+const val CUBIC_CURVE_BUTTON_TITLE = "CubicCurve"
+const val ARC_CIRCLE_BUTTON_TITLE = "ArcCircle"
+const val DELETE_BUTTON_TITLE = "Delete"
 
 /* WINDOW TITLES */
 const val APP_TITLE ="Mesh generator"

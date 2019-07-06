@@ -4,6 +4,7 @@ import java.awt.Cursor
 import java.awt.Point
 import java.awt.Toolkit
 import java.awt.geom.Point2D
+import java.awt.geom.QuadCurve2D
 import java.awt.image.BufferedImage
 import kotlin.math.sqrt
 

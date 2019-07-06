@@ -1,5 +1,6 @@
-package com.viniciusalmada.meshgen
+package com.viniciusalmada.meshgen.ui
 
+import com.viniciusalmada.meshgen.model.Model
 import com.viniciusalmada.meshgen.utils.*
 import java.awt.*
 import java.awt.event.*

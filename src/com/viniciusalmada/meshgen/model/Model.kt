@@ -1,7 +1,7 @@
-package com.viniciusalmada.meshgen
+package com.viniciusalmada.meshgen.model
 
+import com.viniciusalmada.meshgen.ui.CanvasComponent
 import java.awt.Shape
-import java.awt.geom.Ellipse2D
 import java.awt.geom.QuadCurve2D
 import java.awt.geom.Rectangle2D
 
@@ -9,11 +9,15 @@ class Model {
     val mShapesList = ArrayList<Shape>()
 
     init {
-        mShapesList.add(TriangleShape())
-        mShapesList.add(Rectangle2D.Double(10.0, 10.0, 30.0, 30.0))
-        mShapesList.add(Ellipse2D.Double(0.0, 0.0, 10.0, 10.0))
-        val quad = QuadCurve2D.Double(20.0, 10.0, -5.54687, 26.56094, 25.0, 40.0)
+//        mShapesList.add(TriangleShape())
+//        mShapesList.add(Rectangle2D.Double(10.0, 10.0, 30.0, 30.0))
+//        mShapesList.add(Ellipse2D.Double(0.0, 0.0, 10.0, 10.0))
+        val quad = QuadCurve2D.Double(0.0, 0.0, 0.0, 10.0, 4.9103,12.2325)
+        val tol = Rectangle2D.Double(-1.0, 9.0, 2.0,2.0)
+        val tol2 = Rectangle2D.Double(-0.1784, 7.0645, 2.0,2.0)
         mShapesList.add(quad)
+        mShapesList.add(tol)
+        mShapesList.add(tol2)
     }
 
     fun getBoundBox(): Rectangle2D {

@@ -1,4 +1,4 @@
-package com.viniciusalmada.meshgen
+package com.viniciusalmada.meshgen.model
 
 import java.awt.Polygon
 

@@ -1,5 +1,7 @@
 package com.viniciusalmada.meshgen
 
+import com.viniciusalmada.meshgen.ui.AppFrame
+import com.viniciusalmada.meshgen.model.Model
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 
