@@ -7,15 +7,22 @@ import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
-class Line : Curve() {
+class Line() : Curve() {
+
+    override var mTotalPoints: Int = 2
+
+    constructor(ptInit: Point2D.Double, ptEnd: Point2D.Double) : this() {
+        this.mPtInit = ptInit
+        this.mPtEnd = ptEnd
+    }
 
     override fun addPoint(point: Point2D.Double) {
-        when (mTotalPoints) {
+        when (mPointsCount) {
             0 -> mPtInit = point
             1 -> mPtEnd = point
             else -> throw RuntimeException("Only two points are needed!")
         }
-        mTotalPoints++
+        mPointsCount++
     }
 
     override fun shapeToDraw(): Shape {
@@ -23,7 +30,7 @@ class Line : Curve() {
     }
 
     override fun shapeToDraw(tempPt: Point2D.Double): Shape {
-        when (mTotalPoints) {
+        when (mPointsCount) {
             1 -> return Line2D.Double(mPtInit, tempPt)
             else -> throw RuntimeException("Only one point has to exist!")
         }

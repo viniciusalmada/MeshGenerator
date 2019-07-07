@@ -1,8 +1,12 @@
 package com.viniciusalmada.meshgen.ui
 
+import com.viniciusalmada.meshgen.model.CurveCollector
 import com.viniciusalmada.meshgen.model.Model
 import com.viniciusalmada.meshgen.utils.*
-import java.awt.*
+import java.awt.Color
+import java.awt.Dimension
+import java.awt.FlowLayout
+import java.awt.Toolkit
 import java.awt.event.ActionListener
 import java.awt.event.ItemListener
 import java.util.*
@@ -34,7 +38,7 @@ class AppFrame(private val mModel: Model) : JFrame(APP_TITLE) {
         initSize()
         initLocation()
         initWindowComportment()
-        initComponentsSetup()
+        setupComponents()
         initComponentsOnLayout()
     }
 
@@ -58,7 +62,6 @@ class AppFrame(private val mModel: Model) : JFrame(APP_TITLE) {
         this.contentPane.layout = BoxLayout(this.contentPane, BoxLayout.Y_AXIS)
         val panelVisualBar = JPanel(FlowLayout(FlowLayout.LEADING))
         val panelCreateBar = JPanel(FlowLayout(FlowLayout.LEADING))
-        val panelCanvas = JPanel(FlowLayout(FlowLayout.LEADING))
         val panelBottomBar = JPanel(FlowLayout(FlowLayout.LEADING))
 
         panelVisualBar.add(mFitButton)
@@ -81,15 +84,14 @@ class AppFrame(private val mModel: Model) : JFrame(APP_TITLE) {
         panelCreateBar.add(mDeleteButton)
         this.add(panelCreateBar)
 
-        panelCanvas.add(mCanvas)
-        this.add(panelCanvas)
+        this.add(mCanvas)
 
         panelBottomBar.add(mLabelX)
         panelBottomBar.add(mLabelY)
         this.add(panelBottomBar)
     }
 
-    private fun initComponentsSetup(){
+    private fun setupComponents() {
         mCanvas.preferredSize = Dimension((width * 0.90).toInt(), (height * 0.90).toInt())
 
         mSnapCheckBox.isEnabled = false
@@ -103,6 +105,11 @@ class AppFrame(private val mModel: Model) : JFrame(APP_TITLE) {
         mPanDownButton.addActionListener(onPanButtonClickListener())
         mGridButton.addActionListener(onGridButtonClickListener())
         mSnapCheckBox.addItemListener(onSnapCheckChangeListener())
+
+        mSelectButton.addActionListener(onSelectButtonClickListener())
+        mLineButton.addActionListener(onLineButtonClickListener())
+        mQuadCurveButton.addActionListener(onQuadCurveButtonClickListener())
+        mCubicCurveButton.addActionListener(onCubicCurveButtonClickListener())
     }
 
     private fun onSnapCheckChangeListener(): ItemListener {
@@ -213,6 +220,33 @@ class AppFrame(private val mModel: Model) : JFrame(APP_TITLE) {
                 PAN_UP_BUTTON_TITLE -> mCanvas.pan(ZERO_DOUBLE, PAN_POSITIVE_FACTOR)
                 PAN_DOWN_BUTTON_TITLE -> mCanvas.pan(ZERO_DOUBLE, PAN_NEGATIVE_FACTOR)
             }
+        }
+    }
+
+    private fun onSelectButtonClickListener(): ActionListener {
+        return ActionListener {
+            mCanvas.mCanvasMode = CanvasMode.SELECT_MODE
+        }
+    }
+
+    private fun onLineButtonClickListener(): ActionListener {
+        return ActionListener {
+            mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
+            mCanvas.mCurveCollector = CurveCollector(CurveType.LINE)
+        }
+    }
+
+    private fun onQuadCurveButtonClickListener(): ActionListener {
+        return ActionListener {
+            mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
+            mCanvas.mCurveCollector = CurveCollector(CurveType.QUAD_CURVE)
+        }
+    }
+
+    private fun onCubicCurveButtonClickListener(): ActionListener {
+        return ActionListener {
+            mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
+            mCanvas.mCurveCollector = CurveCollector(CurveType.CUBIC_CURVE)
         }
     }
 

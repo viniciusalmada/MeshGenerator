@@ -37,8 +37,8 @@ const val INCORRECT_NUMBER_MESSAGE = "Number incorrect!"
 const val SPACE = " "
 
 /* NUMBER */
-const val DEFAULT_WIDTH = 300
-const val DEFAULT_HEIGHT = 200
+const val DEFAULT_WIDTH = 735
+const val DEFAULT_HEIGHT = 475
 const val COLUMN_TEXT_FIELD_THREE = 3
 const val GAP_20 = 20
 const val GAP_10 = 10
