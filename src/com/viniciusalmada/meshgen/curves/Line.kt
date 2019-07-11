@@ -1,5 +1,7 @@
 package com.viniciusalmada.meshgen.curves
 
+import com.viniciusalmada.meshgen.utils.ERROR_ONE_POINT_TO_EXIST
+import com.viniciusalmada.meshgen.utils.ERROR_TWO_POINTS_ONLY
 import com.viniciusalmada.meshgen.utils.plus
 import com.viniciusalmada.meshgen.utils.times
 import java.awt.Shape
@@ -20,7 +22,7 @@ class Line() : Curve() {
         when (mPointsCount) {
             0 -> mPtInit = point
             1 -> mPtEnd = point
-            else -> throw RuntimeException("Only two points are needed!")
+            else -> throw RuntimeException(ERROR_TWO_POINTS_ONLY)
         }
         mPointsCount++
     }
@@ -32,7 +34,7 @@ class Line() : Curve() {
     override fun shapeToDraw(tempPt: Point2D.Double): Shape {
         when (mPointsCount) {
             1 -> return Line2D.Double(mPtInit, tempPt)
-            else -> throw RuntimeException("Only one point has to exist!")
+            else -> throw RuntimeException(ERROR_ONE_POINT_TO_EXIST)
         }
     }
 

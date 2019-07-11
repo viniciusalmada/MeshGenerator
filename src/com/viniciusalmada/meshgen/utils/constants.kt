@@ -19,7 +19,7 @@ const val ARC_CIRCLE_BUTTON_TITLE = "ArcCircle"
 const val DELETE_BUTTON_TITLE = "Delete"
 
 /* WINDOW TITLES */
-const val APP_TITLE ="Mesh generator"
+const val APP_TITLE = "Mesh generator"
 const val GRID_DIALOG_TITLE = "Enable Grid"
 
 /* COMPONENT TITLES */
@@ -32,6 +32,12 @@ const val GRID_Y_LABEL = "Grid Y: "
 
 /* MESSAGES */
 const val INCORRECT_NUMBER_MESSAGE = "Number incorrect!"
+const val ERROR_TWO_POINTS_ONLY = "Only two points are needed!"
+const val ERROR_THREE_POINTS_ONLY = "Only three points are needed!"
+const val ERROR_FOUR_POINTS_ONLY = "Only four points are needed!"
+const val ERROR_ONE_POINT_TO_EXIST = "Only one point has to exist!"
+const val ERROR_ONE_OR_TWO_POINT_TO_EXIST = "Only one or two point has to exist!"
+const val ERROR_ONE_OR_TWO_OR_THREE_POINT_TO_EXIST = "Only one, two or three point has to exist!"
 
 /* MOCKS */
 const val SPACE = " "

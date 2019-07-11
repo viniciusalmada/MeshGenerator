@@ -282,6 +282,9 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
         mModel.mCurvesList.forEach {
             g2.draw(it.shapeToDraw())
         }
+//        val arc = Arc2D.Double(); arc.setArcByCenter(0.0, 0.0, 5.0, -30.0, -90.0, Arc2D.PIE)
+//        g2.draw(arc)
+//        g2.draw(Ellipse2D.Double(-5.0,-5.0,10.0,10.0))
     }
 
     private fun displayGrid(g2: Graphics2D) {

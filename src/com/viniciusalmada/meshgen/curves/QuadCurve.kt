@@ -1,5 +1,7 @@
 package com.viniciusalmada.meshgen.curves
 
+import com.viniciusalmada.meshgen.utils.ERROR_ONE_OR_TWO_POINT_TO_EXIST
+import com.viniciusalmada.meshgen.utils.ERROR_THREE_POINTS_ONLY
 import com.viniciusalmada.meshgen.utils.plus
 import com.viniciusalmada.meshgen.utils.times
 import java.awt.Shape
@@ -26,7 +28,7 @@ class QuadCurve() : Curve() {
             0 -> mPtInit = point
             1 -> mPtEnd = point
             2 -> mPtCtrl = point
-            else -> throw RuntimeException("Only three points are needed!")
+            else -> throw RuntimeException(ERROR_THREE_POINTS_ONLY)
         }
         mPointsCount++
     }
@@ -39,7 +41,7 @@ class QuadCurve() : Curve() {
         return when (mPointsCount) {
             1 -> Line2D.Double(mPtInit, tempPt)
             2 -> QuadCurve2D.Double(mPtInit.x, mPtInit.y, tempPt.x, tempPt.y, mPtEnd.x, mPtEnd.y)
-            else -> throw RuntimeException("Only one or two point has to exist!")
+            else -> throw RuntimeException(ERROR_ONE_OR_TWO_POINT_TO_EXIST)
         }
     }
 

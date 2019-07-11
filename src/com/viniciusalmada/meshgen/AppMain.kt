@@ -38,5 +38,6 @@ class AppMain {
         for (p in plafs) {
             println(p.className)
         }
+        println(UIManager.getSystemLookAndFeelClassName())
     }
 }

@@ -1,5 +1,7 @@
 package com.viniciusalmada.meshgen.curves
 
+import com.viniciusalmada.meshgen.utils.ERROR_FOUR_POINTS_ONLY
+import com.viniciusalmada.meshgen.utils.ERROR_ONE_OR_TWO_OR_THREE_POINT_TO_EXIST
 import com.viniciusalmada.meshgen.utils.plus
 import com.viniciusalmada.meshgen.utils.times
 import java.awt.Shape
@@ -29,7 +31,7 @@ class CubicCurve() : Curve() {
             1 -> mPtEnd = point
             2 -> mPtCtrl2 = point
             3 -> mPtCtrl1 = point
-            else -> throw RuntimeException("Only four points are needed!")
+            else -> throw RuntimeException(ERROR_FOUR_POINTS_ONLY)
         }
         mPointsCount++
     }
@@ -43,7 +45,7 @@ class CubicCurve() : Curve() {
             1 -> Line2D.Double(mPtInit, tempPt)
             2 -> CubicCurve2D.Double(mPtInit.x, mPtInit.y, tempPt.x, tempPt.y, tempPt.x, tempPt.y, mPtEnd.x, mPtEnd.y)
             3 -> CubicCurve2D.Double(mPtInit.x, mPtInit.y, tempPt.x, tempPt.y, mPtCtrl2.x, mPtCtrl2.y, mPtEnd.x, mPtEnd.y)
-            else -> throw RuntimeException("Only one or two point has to exist!")
+            else -> throw RuntimeException(ERROR_ONE_OR_TWO_OR_THREE_POINT_TO_EXIST)
         }
     }
 

@@ -13,7 +13,7 @@ import java.util.*
 import javax.swing.*
 
 
-class AppFrame(private val mModel: Model) : JFrame(APP_TITLE) {
+class AppFrame(mModel: Model) : JFrame(APP_TITLE) {
     private val mLabelX: JLabel = JLabel(SPACE)
     private val mLabelY: JLabel = JLabel(SPACE)
     private val mFitButton = JButton(FIT_BUTTON_TITLE)
@@ -110,6 +110,7 @@ class AppFrame(private val mModel: Model) : JFrame(APP_TITLE) {
         mLineButton.addActionListener(onLineButtonClickListener())
         mQuadCurveButton.addActionListener(onQuadCurveButtonClickListener())
         mCubicCurveButton.addActionListener(onCubicCurveButtonClickListener())
+        mArcCircleButton.addActionListener(onArcCircleButtonClickListener())
     }
 
     private fun onSnapCheckChangeListener(): ItemListener {
@@ -247,6 +248,13 @@ class AppFrame(private val mModel: Model) : JFrame(APP_TITLE) {
         return ActionListener {
             mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
             mCanvas.mCurveCollector = CurveCollector(CurveType.CUBIC_CURVE)
+        }
+    }
+
+    private fun onArcCircleButtonClickListener(): ActionListener {
+        return ActionListener {
+            mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
+            mCanvas.mCurveCollector = CurveCollector(CurveType.ARC_CIRCLE)
         }
     }
 

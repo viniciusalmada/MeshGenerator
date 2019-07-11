@@ -9,7 +9,7 @@ class Model {
     val mCurvesList = ArrayList<Curve>()
 
     init {
-//        mCurvesList.add(QuadCurve(Point2D.Double(0.0, 0.0), Point2D.Double(0.0, 10.0), Point2D.Double(4.9103, 12.2325)))
+//        mCurvesList.add(arc)
 //        mCurvesList.add(TriangleShape())
 //        mCurvesList.add(Rectangle2D.Double(10.0, 10.0, 30.0, 30.0))
 //        mCurvesList.add(Ellipse2D.Double(0.0, 0.0, 10.0, 10.0))
@@ -32,16 +32,21 @@ class Model {
         if (mCurvesList.size == 1)
             return mCurvesList[0].shapeToDraw().bounds2D
 
-        var x = mCurvesList[0].shapeToDraw().bounds2D.x
-        var y = mCurvesList[0].shapeToDraw().bounds2D.y
-        var w = mCurvesList[0].shapeToDraw().bounds2D.width
-        var h = mCurvesList[0].shapeToDraw().bounds2D.height
+        var minX = mCurvesList[0].shapeToDraw().bounds2D.minX
+        var minY = mCurvesList[0].shapeToDraw().bounds2D.minY
+        var maxX = mCurvesList[0].shapeToDraw().bounds2D.maxX
+        var maxY = mCurvesList[0].shapeToDraw().bounds2D.maxY
         for (s in mCurvesList) {
-            x = if (s.shapeToDraw().bounds2D.minX < x) s.shapeToDraw().bounds2D.minX else x
-            y = if (s.shapeToDraw().bounds2D.minY < y) s.shapeToDraw().bounds2D.minY else y
-            w = if (s.shapeToDraw().bounds2D.maxX > w) s.shapeToDraw().bounds2D.maxX else w
-            h = if (s.shapeToDraw().bounds2D.maxY > h) s.shapeToDraw().bounds2D.maxY else h
+            minX = if (s.shapeToDraw().bounds2D.minX < minX) s.shapeToDraw().bounds2D.minX else minX
+            minY = if (s.shapeToDraw().bounds2D.minY < minY) s.shapeToDraw().bounds2D.minY else minY
+            maxX = if (s.shapeToDraw().bounds2D.maxX > maxX) s.shapeToDraw().bounds2D.maxX else maxX
+            maxY = if (s.shapeToDraw().bounds2D.maxY > maxY) s.shapeToDraw().bounds2D.maxY else maxY
         }
-        return Rectangle2D.Double(x, y, w, h)
+
+        val w = maxX - minX
+        val h = maxY - minY
+        return Rectangle2D.Double(minX, minY, w, h)
     }
 }
+
+
