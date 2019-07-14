@@ -1,6 +1,6 @@
 package com.viniciusalmada.meshgen.utils
 
-/* BUTTONS TITLES */
+/*** BUTTONS TITLES ***/
 const val FIT_BUTTON_TITLE = "Fit"
 const val ZOOM_OUT_BUTTON_TITLE = "Zoom Out"
 const val PAN_LEFT_BUTTON_TITLE = "Pan Left"
@@ -18,19 +18,19 @@ const val CUBIC_CURVE_BUTTON_TITLE = "CubicCurve"
 const val ARC_CIRCLE_BUTTON_TITLE = "ArcCircle"
 const val DELETE_BUTTON_TITLE = "Delete"
 
-/* WINDOW TITLES */
+/*** WINDOW TITLES ***/
 const val APP_TITLE = "Mesh generator"
 const val GRID_DIALOG_TITLE = "Enable Grid"
 
-/* COMPONENT TITLES */
+/*** COMPONENT TITLES ***/
 const val GRID_DIALOG_CHECK_TEXT = "Enable Grid"
 const val SNAP_CHECK_TEXT = "Snap to Grid"
 
-/* LABELS */
+/*** LABELS ***/
 const val GRID_X_LABEL = "Grid X: "
 const val GRID_Y_LABEL = "Grid Y: "
 
-/* MESSAGES */
+/*** MESSAGES ***/
 const val INCORRECT_NUMBER_MESSAGE = "Number incorrect!"
 const val ERROR_TWO_POINTS_ONLY = "Only two points are needed!"
 const val ERROR_THREE_POINTS_ONLY = "Only three points are needed!"
@@ -39,10 +39,10 @@ const val ERROR_ONE_POINT_TO_EXIST = "Only one point has to exist!"
 const val ERROR_ONE_OR_TWO_POINT_TO_EXIST = "Only one or two point has to exist!"
 const val ERROR_ONE_OR_TWO_OR_THREE_POINT_TO_EXIST = "Only one, two or three point has to exist!"
 
-/* MOCKS */
+/*** MOCKS ***/
 const val SPACE = " "
 
-/* NUMBER */
+/*** NUMBER ***/
 const val DEFAULT_WIDTH = 735
 const val DEFAULT_HEIGHT = 475
 const val COLUMN_TEXT_FIELD_THREE = 3
@@ -53,7 +53,7 @@ const val ZERO = 0
 const val ZERO_DOUBLE = 0.0
 const val PAN_POSITIVE_FACTOR = -0.05
 const val PAN_NEGATIVE_FACTOR = 0.05
-const val DISCRETE_CURVE_POINTS = 50
+const val DISCRETE_CURVE_POINTS = 80
 
-/* FORMATS */
+/*** FORMATS ***/
 const val TWO_DECIMALS_FORMAT = "%.2f"

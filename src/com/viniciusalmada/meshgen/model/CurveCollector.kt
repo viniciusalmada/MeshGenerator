@@ -5,10 +5,11 @@ import com.viniciusalmada.meshgen.utils.CurveType
 import java.awt.Shape
 import java.awt.geom.Point2D
 
-class CurveCollector(val mCurveType: CurveType) {
-    var mCurve: Curve?
+class CurveCollector(private val mCurveType: CurveType) {
 
-    var isCurveAlreadyCollected = false
+    var isCurveAlreadyCollected: Boolean = false
+
+    var mCurve: Curve?
 
     init {
         when (mCurveType) {
@@ -27,10 +28,6 @@ class CurveCollector(val mCurveType: CurveType) {
         }
     }
 
-    fun tempCurve(point: Point2D): Shape? {
-        return mCurve?.shapeToDraw(point)
-    }
-
     fun reset() {
         when (mCurveType) {
             CurveType.LINE -> mCurve = Line()
@@ -40,5 +37,9 @@ class CurveCollector(val mCurveType: CurveType) {
             CurveType.NONE -> mCurve = null
         }
         isCurveAlreadyCollected = false
+    }
+
+    fun tempCurve(point: Point2D): Shape? {
+        return mCurve?.shapeToDraw(point)
     }
 }

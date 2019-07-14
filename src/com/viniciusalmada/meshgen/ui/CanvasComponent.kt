@@ -21,7 +21,7 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
         MouseListener {
 
     companion object {
-        val RECTANGLE_NULL = Rectangle2D.Float(0f, 0f, 10f, 10f)
+        val RECTANGLE_DEFAULT = Rectangle2D.Float(0f, 0f, 10f, 10f)
         const val FIT_SCALE_FACTOR = 1.10
         const val ZOOM_IN_FACTOR = 0.95
         const val ZOOM_OUT_FACTOR = 1.05
@@ -36,7 +36,7 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
     private val mLimits: WorldLimits = WorldLimits(-1.0, 11.0, 11.0, -1.0)
     private var mCurrentMousePosition: Point2D = Point2D.Double()
 
-    private lateinit var mPointPressedInSpace: Point2D
+    private lateinit var mPointPressedInWorld: Point2D
     private lateinit var mTempCollectedCurve: Shape
 
     var isGridEnabled: Boolean = false
@@ -67,14 +67,10 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
         )
     }
 
-    /*private fun initKeyboardListener() {
-        addKeyListener(this)
-    }*/
-
     override fun paintComponent(g: Graphics?) {
         val g2 = g?.create() as Graphics2D
         g2.clearRect(0, 0, width, height)
-        g2.color = Color.WHITE
+        g2.color = WHITE
         g2.fillRect(0, 0, width, height)
 
         if (!isComponentReady) {
@@ -109,8 +105,7 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
     }
 
     override fun mouseMoved(e: MouseEvent?) {
-        if (e == null)
-            return
+        if (e == null) return
 
         setupCursor()
 
@@ -118,26 +113,26 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 
         mAppFrame.updateCoordinates(mCurrentMousePosition.x, mCurrentMousePosition.y)
 
-        if (isCollecting)
-            mTempCollectedCurve = mCurveCollector.tempCurve(mCurrentMousePosition)!!
+        if (isCollecting) mTempCollectedCurve = mCurveCollector.tempCurve(mCurrentMousePosition)!!
 
         repaint()
     }
 
     override fun mouseDragged(e: MouseEvent?) {
-        if (SwingUtilities.isMiddleMouseButton(e)) {
-            val point = Point2D.Double(e!!.point.x.toDouble(), e.point.y.toDouble())
-            val pointSpace = mCurrentTransform.inverseTransform(point, null)
-            val diffX = mPointPressedInSpace.x - pointSpace.x
-            val diffY = mPointPressedInSpace.y - pointSpace.y
+        if (e == null) return
+
+        if (isMidClick(e)) {
+            val worldPoint = convertCanvasPointToWorldPoint(e.point)
+            val diffX = mPointPressedInWorld.x - worldPoint.x
+            val diffY = mPointPressedInWorld.y - worldPoint.y
             panAbs(diffX, diffY)
         }
     }
 
     override fun mouseReleased(e: MouseEvent?) {
-        if (SwingUtilities.isMiddleMouseButton(e)) {
-            isMidMouseButtonPressed = false
-        }
+        if (e == null) return
+
+        if (isMidClick(e)) isMidMouseButtonPressed = false
     }
 
     override fun mouseEntered(e: MouseEvent?) {
@@ -147,40 +142,41 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
     override fun mouseClicked(e: MouseEvent?) {
         if (e == null) return
 
-        if (dealDoubleClick(e)) fit()
+        if (isDoubleMidClick(e)) fit()
 
-        var pointOnWorld = convertCanvasPoint2WorldPoint(e.point)
+        val worldPoint = convertCanvasPointToWorldPoint(e.point)
 
-        when (mCanvasMode) {
-            CanvasMode.SELECT_MODE -> {
-                if (mModel.isEmpty())
-                    return
+        if (mCanvasMode == CanvasMode.SELECT_MODE) {
 
-                val tolerance = mLimits.maxDimension() * TOLERANCE_MOUSE_MOVEMENT
-                for (s in mModel.mCurvesList) {
-                    if (s.intersectWithTolerance(pointOnWorld, tolerance)) {
-                        mModel.unselectCurves()
-                        s.isSelected = true
-                        break
-                    } else {
-                        mModel.unselectCurves()
-                    }
+            if (mModel.isEmpty()) return
+
+            val tolerance = mLimits.maxDimension() * TOLERANCE_MOUSE_MOVEMENT
+
+            for (s in mModel.mCurvesList) {
+                if (s.intersectWithTolerance(worldPoint, tolerance)) {
+                    mModel.unselectCurves()
+                    s.isSelected = true
+                    break
+                } else {
+                    mModel.unselectCurves()
                 }
-                repaint()
+            }
+            repaint()
+
+        } else if (mCanvasMode == CanvasMode.CREATE_MODE) {
+            if (isRightClick(e)) {
+                isCollecting = false
+                mCurveCollector.reset()
+                return
             }
 
-            CanvasMode.CREATE_MODE -> {
-                /* if (isSnapEnabled)
-                     pointOnWorld = round2Snap(pointOnWorld)*/
+            mCurveCollector.addPoint(mCurrentMousePosition)
+            isCollecting = true
 
-                mCurveCollector.addPoint(mCurrentMousePosition)
-                isCollecting = true
-
-                if (mCurveCollector.isCurveAlreadyCollected) {
-                    isCollecting = false
-                    mModel.add(mCurveCollector.mCurve!!)
-                    mCurveCollector.reset()
-                }
+            if (mCurveCollector.isCurveAlreadyCollected) {
+                isCollecting = false
+                mModel.add(mCurveCollector.mCurve!!)
+                mCurveCollector.reset()
             }
         }
     }
@@ -191,46 +187,117 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
     }
 
     override fun mousePressed(e: MouseEvent?) {
-        if (SwingUtilities.isMiddleMouseButton(e)) {
+        if (e == null) return
+
+        if (isMidClick(e)) {
             isMidMouseButtonPressed = true
-            val point = Point2D.Double(e!!.point.x.toDouble(), e.point.y.toDouble())
-            mPointPressedInSpace = mCurrentTransform.inverseTransform(point, null) as Point2D.Double
+            mPointPressedInWorld = convertCanvasPointToWorldPoint(e.point)
         }
     }
 
     override fun mouseWheelMoved(e: MouseWheelEvent?) {
-        val point = Point2D.Double(e!!.point.x.toDouble(), e.point.y.toDouble())
-        val pointSpace = mCurrentTransform.inverseTransform(point, null)
-        if (e.preciseWheelRotation < 0.0) {
-            zoom(ZOOM_IN_FACTOR, pointSpace)
-        } else if (e.preciseWheelRotation > 0.0) {
-            zoom(ZOOM_OUT_FACTOR, pointSpace)
+        if (e == null) return
+
+        val worldPoint = convertCanvasPointToWorldPoint(e.point)
+        if (wheelRotatesPositively(e)) {
+            zoom(ZOOM_OUT_FACTOR, worldPoint)
+        } else {
+            zoom(ZOOM_IN_FACTOR, worldPoint)
         }
     }
 
-    private fun updateCurrentTransform(): AffineTransform {
-        val scaleX = 1.0 / (mLimits.width() / width.toDouble())
+    private fun displayGrid(g2: Graphics2D) {
+        val strokeBackup = g2.stroke
 
-        val scaleY = 1.0 / (mLimits.height() / height.toDouble())
+        drawOrigin(g2)
 
-        val transX = -mLimits.left
-        val transY = (mLimits.bot + mLimits.height()) // to reflect y axis
+        if (!isGridEnabled) {
+            g2.stroke = strokeBackup
+            return
+        }
 
-        val transform = AffineTransform()
-        transform.setToIdentity()
-        transform.scale(scaleX, scaleY)
-        transform.translate(transX, transY)
-        transform.scale(1.0, -1.0)
+        val grid = Grid(mLimits, mGridX, mGridY)
+        for (pt in grid.gridPoints) {
+            g2.draw(pt)
+        }
 
-        mCurrentTransform.setTransform(transform)
+        g2.stroke = strokeBackup
+    }
 
-        return transform
+    private fun drawCursor(g2: Graphics2D) {
+        if (!isCursorOnCanvas)
+            return
+
+        val sideSize = mLimits.maxDimension() * TOLERANCE_MOUSE_MOVEMENT
+        val cursor = Cursor(sideSize, mCurrentMousePosition)
+        val paintBkp = g2.paint
+        if (mCanvasMode == CanvasMode.SELECT_MODE) {
+            g2.paint = RED
+            cursor.drawSelectCursor(g2)
+        } else if (mCanvasMode == CanvasMode.CREATE_MODE) {
+            g2.paint = BLUE
+            cursor.drawCreateCursor(g2)
+        }
+        g2.paint = paintBkp
+    }
+
+    private fun drawModel(g2: Graphics2D) {
+        mModel.mCurvesList.forEach {
+            if (!it.isSelected) {
+                g2.paint = BLACK
+            } else {
+                g2.paint = RED
+            }
+            g2.draw(it.shapeToDraw())
+            g2.fill(it.getInitVertex(mCurrentTransform.scaleX))
+            g2.fill(it.getEndVertex(mCurrentTransform.scaleX))
+        }
+        g2.paint = BLACK
+    }
+
+    private fun drawOrigin(g2: Graphics2D) {
+        val line = 12.0
+        val lineX = Line2D.Double(0.0, 0.0, line / mCurrentTransform.scaleX, 0.0)
+        val lineY = Line2D.Double(0.0, 0.0, 0.0, line / mCurrentTransform.scaleX)
+        g2.draw(lineX)
+        g2.draw(lineY)
+    }
+
+    private fun panAbs(panX: Double, panY: Double) {
+        mLimits.left += panX
+        mLimits.right += panX
+        mLimits.bot += panY
+        mLimits.top += panY
+
+        repaint()
+    }
+
+    private fun scaleToPoint(scaleFactor: Double, point: Point2D) {
+        val newWidth = mLimits.width() * scaleFactor
+        val newHeight = mLimits.height() * scaleFactor
+
+        val diffX = mLimits.width() - newWidth
+        val diffY = mLimits.height() - newHeight
+
+        val pointMin = Point2D.Double(-mLimits.left, -mLimits.bot)
+        val pointAbs = pointMin + point
+        val newPt = pointAbs * scaleFactor
+        val gapLeft = pointAbs.x - newPt.x
+        val gapBot = pointAbs.y - newPt.y
+        val gapRight = diffX - gapLeft
+        val gapTop = diffY - gapBot
+
+        mLimits.left += gapLeft
+        mLimits.bot += gapBot
+        mLimits.right -= gapRight
+        mLimits.top -= gapTop
+
     }
 
     private fun scaleWorldWindow() {
         val vpr = height.toDouble() / width.toDouble()
 
-        val box = mModel.getBoundBox()
+        val box = mModel.boundBox()
         mLimits.left = box.minX
         mLimits.right = box.maxX
         mLimits.top = box.maxY
@@ -256,96 +323,18 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 
     }
 
-    private fun scaleToPoint(scaleFactor: Double, point: Point2D.Double) {
-        val newWidth = mLimits.width() * scaleFactor
-        val newHeight = mLimits.height() * scaleFactor
+    private fun setupCurrentMousePosition(pt: Point2D) {
+        val pointOnWorld = convertCanvasPointToWorldPoint(pt)
 
-        val diffX = mLimits.width() - newWidth
-        val diffY = mLimits.height() - newHeight
-
-        val pointMin = Point2D.Double(-mLimits.left, -mLimits.bot)
-        val pointAbs = pointMin + point
-        val newPt = pointAbs * scaleFactor
-        val gapLeft = pointAbs.x - newPt.x
-        val gapBot = pointAbs.y - newPt.y
-        val gapRight = diffX - gapLeft
-        val gapTop = diffY - gapBot
-
-        mLimits.left += gapLeft
-        mLimits.bot += gapBot
-        mLimits.right -= gapRight
-        mLimits.top -= gapTop
-
-    }
-
-    private fun panAbs(panX: Double, panY: Double) {
-        mLimits.left += panX
-        mLimits.right += panX
-        mLimits.bot += panY
-        mLimits.top += panY
-
-        repaint()
-    }
-
-    private fun drawModel(g2: Graphics2D) {
-        mModel.mCurvesList.forEach {
-            if (!it.isSelected) {
-                g2.paint = BLACK
-            } else {
-                g2.paint = RED
-            }
-            g2.draw(it.shapeToDraw())
-            g2.fill(it.getInitVertex(mCurrentTransform.scaleX))
-            g2.fill(it.getEndVertex(mCurrentTransform.scaleX))
-        }
-        g2.paint = BLACK
-    }
-
-    private fun displayGrid(g2: Graphics2D) {
-        val strokeBackup = g2.stroke
-        val line = 12.0
-        val lineX = Line2D.Double(0.0, 0.0, line / mCurrentTransform.scaleX, 0.0)
-        val lineY = Line2D.Double(0.0, 0.0, 0.0, line / mCurrentTransform.scaleX)
-        g2.draw(lineX)
-        g2.draw(lineY)
-
-        if (!isGridEnabled) {
-            g2.stroke = strokeBackup
-            return
-        }
-
-        val grid = Grid(mLimits, mGridX, mGridY)
-        for (pt in grid.gridPoints) {
-            g2.draw(pt)
-        }
-        g2.stroke = strokeBackup
-    }
-
-    private fun drawCursor(g2: Graphics2D) {
-        if (!isCursorOnCanvas)
-            return
-
-        val sideSize = mLimits.maxDimension() * TOLERANCE_MOUSE_MOVEMENT
-        val cursor = Cursor(sideSize, mCurrentMousePosition)
-        val paintBkp = g2.paint
-        if (mCanvasMode == CanvasMode.SELECT_MODE) {
-            g2.paint = RED
-            cursor.drawSelectCursor(g2)
+        mCurrentMousePosition = if (isSnapEnabled && mCanvasMode == CanvasMode.CREATE_MODE) {
+            snapToGrid(pointOnWorld)
         } else if (mCanvasMode == CanvasMode.CREATE_MODE) {
-            g2.paint = BLUE
-            cursor.drawCreateCursor(g2)
+            snapToCurve(pointOnWorld)
+        } else if (mCanvasMode == CanvasMode.SELECT_MODE) {
+            pointOnWorld
+        } else {
+            pointOnWorld
         }
-        g2.paint = paintBkp
-    }
-
-    private fun round2Snap(pt: Point2D): Point2D {
-        val x0 = (pt.x / mGridX).roundToInt() * mGridX
-        val y0 = (pt.y / mGridY).roundToInt() * mGridY
-        return Point2D.Double(x0, y0)
-    }
-
-    private fun round2CurvesVertex(pt: Point2D): Point2D {
-        return mModel.snap2Curve(pt, mLimits.maxDimension() * TOLERANCE_MOUSE_MOVEMENT)
     }
 
     private fun setupCursor() {
@@ -356,39 +345,55 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
         }
     }
 
-    private fun setupCurrentMousePosition(pt: Point2D) {
-        val pointOnWorld = convertCanvasPoint2WorldPoint(pt)
+    private fun updateCurrentTransform(): AffineTransform {
+        val scaleX = 1.0 / (mLimits.width() / width.toDouble())
 
-        if (isSnapEnabled && mCanvasMode == CanvasMode.CREATE_MODE) {
-            mCurrentMousePosition = round2Snap(pointOnWorld)
-        } else if (mCanvasMode == CanvasMode.CREATE_MODE) {
-            mCurrentMousePosition = round2CurvesVertex(pointOnWorld)
-        } else if (mCanvasMode == CanvasMode.SELECT_MODE) {
-            mCurrentMousePosition = pointOnWorld
-        } else {
-            mCurrentMousePosition = pointOnWorld
-        }
-        /*mCurrentMousePosition = when {
-            isSnapEnabled && mCanvasMode == CanvasMode.CREATE_MODE -> round2Snap(pointOnWorld)
-            mCanvasMode == CanvasMode.CREATE_MODE -> round2CurvesVertex(pointOnWorld)
-            mCanvasMode == CanvasMode.SELECT_MODE -> pointOnWorld
-            else -> pointOnWorld
-        }
-        mCurrentMousePosition = if (!isSnapEnabled || mCanvasMode == CanvasMode.SELECT_MODE)
-            pointOnWorld
-        else
-            round2Snap(pointOnWorld)*/
+        val scaleY = 1.0 / (mLimits.height() / height.toDouble())
+
+        val transX = -mLimits.left
+        val transY = (mLimits.bot + mLimits.height()) // to reflect y axis
+
+        val transform = AffineTransform()
+        transform.setToIdentity()
+        transform.scale(scaleX, scaleY)
+        transform.translate(transX, transY)
+        transform.scale(1.0, -1.0)
+
+        mCurrentTransform.setTransform(transform)
+
+        return transform
     }
 
-    private fun convertCanvasPoint2WorldPoint(point: Point2D): Point2D {
-        val pSrc = point
-        val pDst = Point2D.Double()
-        mCurrentTransform.inverseTransform(pSrc, pDst)
-        return pDst
-    }
-
-    private fun dealDoubleClick(e: MouseEvent): Boolean {
+    private fun isDoubleMidClick(e: MouseEvent): Boolean {
         return SwingUtilities.isMiddleMouseButton(e) && e.clickCount == 2
+    }
+
+    private fun isMidClick(e: MouseEvent): Boolean {
+        return SwingUtilities.isMiddleMouseButton(e)
+    }
+
+    private fun isRightClick(e: MouseEvent): Boolean {
+        return SwingUtilities.isRightMouseButton(e)
+    }
+
+    private fun wheelRotatesPositively(e: MouseWheelEvent): Boolean {
+        return e.preciseWheelRotation > 0.0
+    }
+
+    private fun snapToGrid(pt: Point2D): Point2D {
+        val x0 = (pt.x / mGridX).roundToInt() * mGridX
+        val y0 = (pt.y / mGridY).roundToInt() * mGridY
+        return Point2D.Double(x0, y0)
+    }
+
+    private fun snapToCurve(pt: Point2D): Point2D {
+        return mModel.snapToCurve(pt, mLimits.maxDimension() * TOLERANCE_MOUSE_MOVEMENT)
+    }
+
+    private fun convertCanvasPointToWorldPoint(point: Point2D): Point2D {
+        val pDst = Point2D.Double()
+        mCurrentTransform.inverseTransform(point, pDst)
+        return pDst
     }
 
     fun fit() {
@@ -397,7 +402,7 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
     }
 
     fun zoom(factor: Double, point: Point2D = mLimits.pointCenter()) {
-        scaleToPoint(factor, point as Point2D.Double)
+        scaleToPoint(factor, point)
         repaint()
     }
 

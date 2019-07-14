@@ -8,41 +8,26 @@ import java.awt.geom.Rectangle2D
 
 abstract class Curve {
 
-    protected val mPoints = ArrayList<Point2D>()
+    abstract val mTotalPoints: Int
 
-    private val mVertexRadius = 2.5
+    protected val mPoints: ArrayList<Point2D> = ArrayList()
+    protected var mPointsCount: Int = 0
+
+    private val mVertexRadius: Double = 2.5
 
     var isSelected: Boolean = false
     var mPtInit: Point2D = Point2D.Double()
     var mPtEnd: Point2D = Point2D.Double()
 
-    protected var mPointsCount: Int = 0
-
-    abstract val mTotalPoints: Int
-
     abstract fun addPoint(point: Point2D)
+
+    abstract fun intersectWithTolerance(point: Point2D, tolerance: Double): Boolean
+
+    abstract fun pointAtParam(t: Double): Point2D
 
     abstract fun shapeToDraw(): Shape
 
     abstract fun shapeToDraw(tempPt: Point2D): Shape
-
-    abstract fun pointAtParam(t: Double): Point2D
-
-    abstract fun intersectWithTolerance(point: Point2D, tolerance: Double): Boolean
-
-    open fun boundBox(): Rectangle2D {
-        var minX = mPoints[0].x
-        var maxX = mPoints[0].x
-        var minY = mPoints[0].y
-        var maxY = mPoints[0].y
-        for (pt in mPoints) {
-            minX = if (pt.x < minX) pt.x else minX
-            maxX = if (pt.x > maxX) pt.x else maxX
-            minY = if (pt.y < minY) pt.y else minY
-            maxY = if (pt.y > maxY) pt.y else maxY
-        }
-        return Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY)
-    }
 
     open fun closestPoint(pt: Point2D): Pair<Double, Point2D> {
         var closestPoint: Point2D = mPoints[0]
@@ -56,6 +41,20 @@ abstract class Curve {
         }
 
         return Pair(dist, closestPoint)
+    }
+
+    open fun boundBox(): Rectangle2D {
+        var minX = mPoints[0].x
+        var maxX = mPoints[0].x
+        var minY = mPoints[0].y
+        var maxY = mPoints[0].y
+        for (pt in mPoints) {
+            minX = if (pt.x < minX) pt.x else minX
+            maxX = if (pt.x > maxX) pt.x else maxX
+            minY = if (pt.y < minY) pt.y else minY
+            maxY = if (pt.y > maxY) pt.y else maxY
+        }
+        return Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY)
     }
 
     fun isCurveComplete(): Boolean {

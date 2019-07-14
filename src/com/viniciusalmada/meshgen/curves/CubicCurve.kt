@@ -34,17 +34,14 @@ class CubicCurve : Curve() {
         }
     }
 
-    override fun shapeToDraw(): Shape {
-        return CubicCurve2D.Double(mPtInit.x, mPtInit.y, mPtCtrl1.x, mPtCtrl1.y, mPtCtrl2.x, mPtCtrl2.y, mPtEnd.x, mPtEnd.y)
-    }
-
-    override fun shapeToDraw(tempPt: Point2D): Shape {
-        return when (mPointsCount) {
-            1 -> Line2D.Double(mPtInit, tempPt)
-            2 -> CubicCurve2D.Double(mPtInit.x, mPtInit.y, tempPt.x, tempPt.y, tempPt.x, tempPt.y, mPtEnd.x, mPtEnd.y)
-            3 -> CubicCurve2D.Double(mPtInit.x, mPtInit.y, tempPt.x, tempPt.y, mPtCtrl2.x, mPtCtrl2.y, mPtEnd.x, mPtEnd.y)
-            else -> throw RuntimeException(ERROR_ONE_OR_TWO_OR_THREE_POINT_TO_EXIST)
+    override fun intersectWithTolerance(point: Point2D, tolerance: Double): Boolean {
+        val rectTol = Rectangle2D.Double(point.x - tolerance / 2, point.y - tolerance / 2, tolerance, tolerance)
+        for (i in 0 until mPoints.size - 1) {
+            val line = Line2D.Double(mPoints[i], mPoints[i + 1])
+            if (line.intersects(rectTol))
+                return true
         }
+        return false
     }
 
     override fun pointAtParam(t: Double): Point2D {
@@ -58,13 +55,16 @@ class CubicCurve : Curve() {
         }
     }
 
-    override fun intersectWithTolerance(point: Point2D, tolerance: Double): Boolean {
-        val rectTol = Rectangle2D.Double(point.x - tolerance / 2, point.y - tolerance / 2, tolerance, tolerance)
-        for (i in 0 until mPoints.size - 1) {
-            val line = Line2D.Double(mPoints[i], mPoints[i + 1])
-            if (line.intersects(rectTol))
-                return true
+    override fun shapeToDraw(): Shape {
+        return CubicCurve2D.Double(mPtInit.x, mPtInit.y, mPtCtrl1.x, mPtCtrl1.y, mPtCtrl2.x, mPtCtrl2.y, mPtEnd.x, mPtEnd.y)
+    }
+
+    override fun shapeToDraw(tempPt: Point2D): Shape {
+        return when (mPointsCount) {
+            1 -> Line2D.Double(mPtInit, tempPt)
+            2 -> CubicCurve2D.Double(mPtInit.x, mPtInit.y, tempPt.x, tempPt.y, tempPt.x, tempPt.y, mPtEnd.x, mPtEnd.y)
+            3 -> CubicCurve2D.Double(mPtInit.x, mPtInit.y, tempPt.x, tempPt.y, mPtCtrl2.x, mPtCtrl2.y, mPtEnd.x, mPtEnd.y)
+            else -> throw RuntimeException(ERROR_ONE_OR_TWO_OR_THREE_POINT_TO_EXIST)
         }
-        return false
     }
 }

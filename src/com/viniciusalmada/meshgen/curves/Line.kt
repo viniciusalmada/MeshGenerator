@@ -13,6 +13,23 @@ class Line : Curve() {
 
     override var mTotalPoints: Int = 2
 
+    override fun closestPoint(pt: Point2D): Pair<Double, Point2D> {
+        val AB = mPtEnd - mPtInit
+        val AC = pt - mPtInit
+        val t = (AB.dotProd(AC)) / (AB.norm().pow(2))
+        val closestPoint = pointAtParam(t)
+        val dist = dist2Points(pt, closestPoint)
+        return Pair(dist, closestPoint)
+    }
+
+    override fun boundBox(): Rectangle2D {
+        val x = min(mPtInit.x, mPtEnd.x)
+        val y = min(mPtInit.y, mPtEnd.y)
+        val maxX = max(mPtInit.x, mPtEnd.x)
+        val maxY = max(mPtInit.y, mPtEnd.y)
+        return Rectangle2D.Double(x, y, maxX - x, maxY - y)
+    }
+
     override fun addPoint(point: Point2D) {
         when (mPointsCount) {
             0 -> mPtInit = point
@@ -20,6 +37,20 @@ class Line : Curve() {
             else -> throw RuntimeException(ERROR_TWO_POINTS_ONLY)
         }
         mPointsCount++
+    }
+
+    override fun intersectWithTolerance(point: Point2D, tolerance: Double): Boolean {
+        val line = Line2D.Double(mPtInit, mPtEnd)
+        val rectTol = Rectangle2D.Double(point.x - tolerance / 2, point.y - tolerance / 2, tolerance, tolerance)
+        return line.intersects(rectTol)
+    }
+
+    override fun pointAtParam(t: Double): Point2D {
+        return when {
+            t <= 0.0 -> mPtInit
+            t >= 1.0 -> mPtEnd
+            else -> mPtInit + (mPtEnd - mPtInit) * t
+        }
     }
 
     override fun shapeToDraw(): Shape {
@@ -31,37 +62,6 @@ class Line : Curve() {
             1 -> return Line2D.Double(mPtInit, tempPt)
             else -> throw RuntimeException(ERROR_ONE_POINT_TO_EXIST)
         }
-    }
-
-    override fun pointAtParam(t: Double): Point2D {
-        return when {
-            t <= 0.0 -> mPtInit
-            t >= 1.0 -> mPtEnd
-            else -> mPtInit + (mPtEnd - mPtInit) * t
-        }
-    }
-
-    override fun intersectWithTolerance(point: Point2D, tolerance: Double): Boolean {
-        val line = Line2D.Double(mPtInit, mPtEnd)
-        val rectTol = Rectangle2D.Double(point.x - tolerance / 2, point.y - tolerance / 2, tolerance, tolerance)
-        return line.intersects(rectTol)
-    }
-
-    override fun boundBox(): Rectangle2D {
-        val x = min(mPtInit.x, mPtEnd.x)
-        val y = min(mPtInit.y, mPtEnd.y)
-        val maxX = max(mPtInit.x, mPtEnd.x)
-        val maxY = max(mPtInit.y, mPtEnd.y)
-        return Rectangle2D.Double(x, y, maxX - x, maxY - y)
-    }
-
-    override fun closestPoint(pt: Point2D): Pair<Double, Point2D> {
-        val AB = mPtEnd - mPtInit
-        val AC = pt - mPtInit
-        val t = (AB.dotProd(AC)) / (AB.norm().pow(2))
-        val closestPoint = pointAtParam(t)
-        val dist = dist2Points(pt, closestPoint)
-        return Pair(dist, closestPoint)
     }
 
 }

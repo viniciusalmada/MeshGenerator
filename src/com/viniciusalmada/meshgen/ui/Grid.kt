@@ -4,7 +4,8 @@ import com.viniciusalmada.meshgen.utils.WorldLimits
 import java.awt.geom.Line2D
 
 class Grid(mLimits: WorldLimits, mGridX: Double, mGridY: Double) {
-    val gridPoints = ArrayList<Line2D>()
+
+    val gridPoints: ArrayList<Line2D> = ArrayList()
 
     init {
         val x0 = 0.0
