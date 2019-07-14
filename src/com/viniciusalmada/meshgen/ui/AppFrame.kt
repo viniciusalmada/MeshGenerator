@@ -7,8 +7,6 @@ import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.Toolkit
-import java.awt.event.ActionListener
-import java.awt.event.ItemListener
 import java.util.*
 import javax.swing.*
 
@@ -16,6 +14,7 @@ import javax.swing.*
 class AppFrame(mModel: Model) : JFrame(APP_TITLE) {
     private val mLabelX: JLabel = JLabel(SPACE)
     private val mLabelY: JLabel = JLabel(SPACE)
+    private val mLabelStatus: JLabel = JLabel(SPACE)
     private val mFitButton = JButton(FIT_BUTTON_TITLE)
     private val mZoomInButton = JButton(ZOOM_IN_BUTTON_TITLE)
     private val mZoomOutButton = JButton(ZOOM_OUT_BUTTON_TITLE)
@@ -62,7 +61,8 @@ class AppFrame(mModel: Model) : JFrame(APP_TITLE) {
         this.contentPane.layout = BoxLayout(this.contentPane, BoxLayout.Y_AXIS)
         val panelVisualBar = JPanel(FlowLayout(FlowLayout.LEADING))
         val panelCreateBar = JPanel(FlowLayout(FlowLayout.LEADING))
-        val panelBottomBar = JPanel(FlowLayout(FlowLayout.LEADING))
+        val panelCoordinates = JPanel(FlowLayout(FlowLayout.LEADING))
+        val panelStatusBar = JPanel(FlowLayout(FlowLayout.LEADING))
 
         panelVisualBar.add(mFitButton)
         panelVisualBar.add(mZoomInButton)
@@ -86,176 +86,174 @@ class AppFrame(mModel: Model) : JFrame(APP_TITLE) {
 
         this.add(mCanvas)
 
-        panelBottomBar.add(mLabelX)
-        panelBottomBar.add(mLabelY)
-        this.add(panelBottomBar)
+        panelCoordinates.add(mLabelX)
+        panelCoordinates.add(mLabelY)
+        this.add(panelCoordinates)
+
+        panelStatusBar.add(mLabelStatus)
+        this.add(panelStatusBar)
     }
 
     private fun setupComponents() {
         mCanvas.preferredSize = Dimension((width * 0.90).toInt(), (height * 0.90).toInt())
 
+        mLabelStatus.horizontalAlignment = SwingConstants.RIGHT
+
         mSnapCheckBox.isEnabled = false
 
         mFitButton.addActionListener { mCanvas.fit() }
-        mZoomInButton.addActionListener(onZoomButtonClickListener())
-        mZoomOutButton.addActionListener(onZoomButtonClickListener())
-        mPanLeftButton.addActionListener(onPanButtonClickListener())
-        mPanRightButton.addActionListener(onPanButtonClickListener())
-        mPanUpButton.addActionListener(onPanButtonClickListener())
-        mPanDownButton.addActionListener(onPanButtonClickListener())
-        mGridButton.addActionListener(onGridButtonClickListener())
-        mSnapCheckBox.addItemListener(onSnapCheckChangeListener())
+        mZoomInButton.addActionListener { onZoomButtonClickListener(mZoomInButton) }
+        mZoomOutButton.addActionListener { onZoomButtonClickListener(mZoomOutButton) }
+        mPanLeftButton.addActionListener { onPanButtonClickListener(mPanLeftButton) }
+        mPanRightButton.addActionListener { onPanButtonClickListener(mPanRightButton) }
+        mPanUpButton.addActionListener { onPanButtonClickListener(mPanUpButton) }
+        mPanDownButton.addActionListener { onPanButtonClickListener(mPanDownButton) }
+        mGridButton.addActionListener { onGridButtonClickListener() }
+        mSnapCheckBox.addItemListener { onSnapCheckChangeListener() }
 
-        mSelectButton.addActionListener(onSelectButtonClickListener())
-        mLineButton.addActionListener(onLineButtonClickListener())
-        mQuadCurveButton.addActionListener(onQuadCurveButtonClickListener())
-        mCubicCurveButton.addActionListener(onCubicCurveButtonClickListener())
-        mArcCircleButton.addActionListener(onArcCircleButtonClickListener())
+        mSelectButton.addActionListener { onSelectButtonClickListener() }
+        mLineButton.addActionListener { onLineButtonClickListener() }
+        mQuadCurveButton.addActionListener { onQuadCurveButtonClickListener() }
+        mCubicCurveButton.addActionListener { onCubicCurveButtonClickListener() }
+        mArcCircleButton.addActionListener { onArcCircleButtonClickListener() }
+        mDeleteButton.addActionListener { onDeleteButtonClickListener() }
     }
 
-    private fun onSnapCheckChangeListener(): ItemListener {
-        return ItemListener {
-            mCanvas.isSnapEnabled = mSnapCheckBox.isSelected
+    private fun onSnapCheckChangeListener() {
+        mCanvas.isSnapEnabled = mSnapCheckBox.isSelected
+    }
+
+    private fun onGridButtonClickListener() {
+        val gridDialog = JDialog(this, GRID_DIALOG_TITLE, true)
+        val gridCheckBox = JCheckBox(GRID_DIALOG_CHECK_TEXT, mCanvas.isGridEnabled)
+        val labelX = JLabel(GRID_X_LABEL)
+        val labelY = JLabel(GRID_Y_LABEL)
+        val gridNumberX = JTextField(mCanvas.mGridX.toString(), COLUMN_TEXT_FIELD_THREE)
+        val gridNumberY = JTextField(mCanvas.mGridY.toString(), COLUMN_TEXT_FIELD_THREE)
+        val buttonOk = JButton(CONFIRM_GRID_BUTTON_TITLE)
+        val statusLabel = JLabel(SPACE)
+
+        if (mCanvas.isGridEnabled) {
+            gridNumberX.isEnabled = true
+            gridNumberY.isEnabled = true
+        } else {
+            gridNumberX.isEnabled = false
+            gridNumberY.isEnabled = false
         }
-    }
 
-    private fun onGridButtonClickListener(): ActionListener {
-        return ActionListener {
-            val gridDialog = JDialog(this, GRID_DIALOG_TITLE, true)
-            val gridCheckBox = JCheckBox(GRID_DIALOG_CHECK_TEXT, mCanvas.isGridEnabled)
-            val labelX = JLabel(GRID_X_LABEL)
-            val labelY = JLabel(GRID_Y_LABEL)
-            val gridNumberX = JTextField(mCanvas.mGridX.toString(), COLUMN_TEXT_FIELD_THREE)
-            val gridNumberY = JTextField(mCanvas.mGridY.toString(), COLUMN_TEXT_FIELD_THREE)
-            val buttonOk = JButton(CONFIRM_GRID_BUTTON_TITLE)
-            val statusLabel = JLabel(SPACE)
-
-            if (mCanvas.isGridEnabled) {
+        gridCheckBox.addItemListener {
+            if (gridCheckBox.isSelected) {
                 gridNumberX.isEnabled = true
                 gridNumberY.isEnabled = true
+                mSnapCheckBox.isEnabled = true
             } else {
                 gridNumberX.isEnabled = false
                 gridNumberY.isEnabled = false
+                mSnapCheckBox.isEnabled = false
             }
+        }
 
-            gridCheckBox.addItemListener {
-                if (gridCheckBox.isSelected) {
-                    gridNumberX.isEnabled = true
-                    gridNumberY.isEnabled = true
-                    mSnapCheckBox.isEnabled = true
-                } else {
-                    gridNumberX.isEnabled = false
-                    gridNumberY.isEnabled = false
-                    mSnapCheckBox.isEnabled = false
-                }
-            }
-
-            buttonOk.addActionListener {
-                if (gridCheckBox.isSelected) {
-                    val textX = gridNumberX.text
-                    val textY = gridNumberY.text
-                    try {
-                        val gridX = textX.toDouble()
-                        val gridY = textY.toDouble()
-                        mCanvas.mGridX = gridX
-                        mCanvas.mGridY = gridY
-                        mCanvas.isGridEnabled = true
-                        gridDialog.dispose()
-                    } catch (e: NumberFormatException) {
-                        e.printStackTrace()
-                        statusLabel.foreground = Color.RED
-                        statusLabel.text = INCORRECT_NUMBER_MESSAGE
-                    }
-                } else {
-                    mCanvas.isGridEnabled = false
+        buttonOk.addActionListener {
+            if (gridCheckBox.isSelected) {
+                val textX = gridNumberX.text
+                val textY = gridNumberY.text
+                try {
+                    val gridX = textX.toDouble()
+                    val gridY = textY.toDouble()
+                    mCanvas.mGridX = gridX
+                    mCanvas.mGridY = gridY
+                    mCanvas.isGridEnabled = true
                     gridDialog.dispose()
+                } catch (e: NumberFormatException) {
+                    e.printStackTrace()
+                    statusLabel.foreground = Color.RED
+                    statusLabel.text = INCORRECT_NUMBER_MESSAGE
                 }
-                mCanvas.repaint()
+            } else {
+                mCanvas.isGridEnabled = false
+                gridDialog.dispose()
             }
-
-            gridDialog.layout = BoxLayout(gridDialog.contentPane, BoxLayout.PAGE_AXIS)
-            val boxX = Box.createHorizontalBox()
-            boxX.add(Box.createRigidArea(Dimension(GAP_20, ZERO)))
-            boxX.add(labelX)
-            boxX.add(gridNumberX)
-            boxX.add(Box.createRigidArea(Dimension(GAP_20, ZERO)))
-
-            val boxY = Box.createHorizontalBox()
-            boxY.add(Box.createRigidArea(Dimension(GAP_20, ZERO)))
-            boxY.add(labelY)
-            boxY.add(gridNumberY)
-            boxY.add(Box.createRigidArea(Dimension(GAP_20, ZERO)))
-
-            gridDialog.add(gridCheckBox)
-            gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_10)))
-            gridDialog.add(boxX)
-            gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_10)))
-            gridDialog.add(boxY)
-            gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_20)))
-            gridDialog.add(buttonOk)
-            gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_5)))
-            gridDialog.add(statusLabel)
-            gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_10)))
-
-            gridDialog.setLocationRelativeTo(this)
-            gridDialog.pack()
-            gridDialog.isVisible = true
+            mCanvas.repaint()
         }
 
+        gridDialog.layout = BoxLayout(gridDialog.contentPane, BoxLayout.PAGE_AXIS)
+        val boxX = Box.createHorizontalBox()
+        boxX.add(Box.createRigidArea(Dimension(GAP_20, ZERO)))
+        boxX.add(labelX)
+        boxX.add(gridNumberX)
+        boxX.add(Box.createRigidArea(Dimension(GAP_20, ZERO)))
+
+        val boxY = Box.createHorizontalBox()
+        boxY.add(Box.createRigidArea(Dimension(GAP_20, ZERO)))
+        boxY.add(labelY)
+        boxY.add(gridNumberY)
+        boxY.add(Box.createRigidArea(Dimension(GAP_20, ZERO)))
+
+        gridDialog.add(gridCheckBox)
+        gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_10)))
+        gridDialog.add(boxX)
+        gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_10)))
+        gridDialog.add(boxY)
+        gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_20)))
+        gridDialog.add(buttonOk)
+        gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_5)))
+        gridDialog.add(statusLabel)
+        gridDialog.add(Box.createRigidArea(Dimension(ZERO, GAP_10)))
+
+        gridDialog.setLocationRelativeTo(mCanvas)
+        gridDialog.pack()
+        gridDialog.isVisible = true
     }
 
-    private fun onZoomButtonClickListener(): ActionListener {
-        return ActionListener {
-            when (it.actionCommand) {
-                ZOOM_IN_BUTTON_TITLE -> mCanvas.zoom(CanvasComponent.ZOOM_IN_FACTOR)
-                ZOOM_OUT_BUTTON_TITLE -> mCanvas.zoom(CanvasComponent.ZOOM_OUT_FACTOR)
-            }
-        }
-    }
-
-    private fun onPanButtonClickListener(): ActionListener {
-        return ActionListener {
-            when (it.actionCommand) {
-                PAN_LEFT_BUTTON_TITLE -> mCanvas.pan(PAN_NEGATIVE_FACTOR, ZERO_DOUBLE)
-                PAN_RIGHT_BUTTON_TITLE -> mCanvas.pan(PAN_POSITIVE_FACTOR, ZERO_DOUBLE)
-                PAN_UP_BUTTON_TITLE -> mCanvas.pan(ZERO_DOUBLE, PAN_POSITIVE_FACTOR)
-                PAN_DOWN_BUTTON_TITLE -> mCanvas.pan(ZERO_DOUBLE, PAN_NEGATIVE_FACTOR)
-            }
+    private fun onZoomButtonClickListener(bt: JButton) {
+        when (bt.actionCommand) {
+            ZOOM_IN_BUTTON_TITLE -> mCanvas.zoom(CanvasComponent.ZOOM_IN_FACTOR)
+            ZOOM_OUT_BUTTON_TITLE -> mCanvas.zoom(CanvasComponent.ZOOM_OUT_FACTOR)
         }
     }
 
-    private fun onSelectButtonClickListener(): ActionListener {
-        return ActionListener {
-            mCanvas.mCanvasMode = CanvasMode.SELECT_MODE
+    private fun onPanButtonClickListener(bt: JButton) {
+        when (bt.actionCommand) {
+            PAN_LEFT_BUTTON_TITLE -> mCanvas.pan(PAN_NEGATIVE_FACTOR, ZERO_DOUBLE)
+            PAN_RIGHT_BUTTON_TITLE -> mCanvas.pan(PAN_POSITIVE_FACTOR, ZERO_DOUBLE)
+            PAN_UP_BUTTON_TITLE -> mCanvas.pan(ZERO_DOUBLE, PAN_POSITIVE_FACTOR)
+            PAN_DOWN_BUTTON_TITLE -> mCanvas.pan(ZERO_DOUBLE, PAN_NEGATIVE_FACTOR)
         }
     }
 
-    private fun onLineButtonClickListener(): ActionListener {
-        return ActionListener {
-            mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
-            mCanvas.mCurveCollector = CurveCollector(CurveType.LINE)
-        }
+    private fun onSelectButtonClickListener() {
+        mCanvas.mCanvasMode = CanvasMode.SELECT_MODE
+        mLabelStatus.text = "Select a curve"
     }
 
-    private fun onQuadCurveButtonClickListener(): ActionListener {
-        return ActionListener {
-            mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
-            mCanvas.mCurveCollector = CurveCollector(CurveType.QUAD_CURVE)
-        }
+    private fun onLineButtonClickListener() {
+        mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
+        mCanvas.mCurveCollector = CurveCollector(CurveType.LINE)
+        mLabelStatus.text = "Creating Line"
     }
 
-    private fun onCubicCurveButtonClickListener(): ActionListener {
-        return ActionListener {
-            mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
-            mCanvas.mCurveCollector = CurveCollector(CurveType.CUBIC_CURVE)
-        }
+    private fun onQuadCurveButtonClickListener() {
+        mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
+        mCanvas.mCurveCollector = CurveCollector(CurveType.QUAD_CURVE)
+        mLabelStatus.text = "Creating Quadratic Curve"
     }
 
-    private fun onArcCircleButtonClickListener(): ActionListener {
-        return ActionListener {
-            mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
-            mCanvas.mCurveCollector = CurveCollector(CurveType.ARC_CIRCLE)
-        }
+    private fun onCubicCurveButtonClickListener() {
+        mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
+        mCanvas.mCurveCollector = CurveCollector(CurveType.CUBIC_CURVE)
+        mLabelStatus.text = "Creating Cubic Curve"
+    }
+
+    private fun onArcCircleButtonClickListener() {
+        mCanvas.mCanvasMode = CanvasMode.CREATE_MODE
+        mCanvas.mCurveCollector = CurveCollector(CurveType.ARC_CIRCLE)
+        mLabelStatus.text = "Creating Arc Circle"
+    }
+
+    private fun onDeleteButtonClickListener() {
+        mCanvas.mCanvasMode = CanvasMode.SELECT_MODE
+        mCanvas.deleteCurveSelected()
+        mLabelStatus.text = "Select a curve to delete"
     }
 
     fun updateCoordinates(x: Double, y: Double) {

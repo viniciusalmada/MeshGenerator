@@ -2,24 +2,14 @@ package com.viniciusalmada.meshgen.model
 
 import com.viniciusalmada.meshgen.curves.Curve
 import com.viniciusalmada.meshgen.ui.CanvasComponent
+import com.viniciusalmada.meshgen.utils.dist2Points
+import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
+import kotlin.math.abs
 
 class Model {
 
     val mCurvesList = ArrayList<Curve>()
-
-    init {
-//        mCurvesList.add(arc)
-//        mCurvesList.add(TriangleShape())
-//        mCurvesList.add(Rectangle2D.Double(10.0, 10.0, 30.0, 30.0))
-//        mCurvesList.add(Ellipse2D.Double(0.0, 0.0, 10.0, 10.0))
-//        val quad = QuadCurve2D.Double(0.0, 0.0, 0.0, 10.0, 4.9103,12.2325)
-//        val tol = Rectangle2D.Double(-1.0, 9.0, 2.0,2.0)
-//        val tol2 = Rectangle2D.Double(-0.1784, 7.0645, 2.0,2.0)
-//        mCurvesList.add(quad)
-//        mCurvesList.add(tol)
-//        mCurvesList.add(tol2)
-    }
 
     fun add(curve: Curve) {
         mCurvesList.add(curve)
@@ -30,22 +20,86 @@ class Model {
             return CanvasComponent.RECTANGLE_NULL
 
         if (mCurvesList.size == 1)
-            return mCurvesList[0].shapeToDraw().bounds2D
+            return mCurvesList[0].boundBox()
 
-        var minX = mCurvesList[0].shapeToDraw().bounds2D.minX
-        var minY = mCurvesList[0].shapeToDraw().bounds2D.minY
-        var maxX = mCurvesList[0].shapeToDraw().bounds2D.maxX
-        var maxY = mCurvesList[0].shapeToDraw().bounds2D.maxY
+        var minX = mCurvesList[0].boundBox().minX
+        var minY = mCurvesList[0].boundBox().minY
+        var maxX = mCurvesList[0].boundBox().maxX
+        var maxY = mCurvesList[0].boundBox().maxY
         for (s in mCurvesList) {
-            minX = if (s.shapeToDraw().bounds2D.minX < minX) s.shapeToDraw().bounds2D.minX else minX
-            minY = if (s.shapeToDraw().bounds2D.minY < minY) s.shapeToDraw().bounds2D.minY else minY
-            maxX = if (s.shapeToDraw().bounds2D.maxX > maxX) s.shapeToDraw().bounds2D.maxX else maxX
-            maxY = if (s.shapeToDraw().bounds2D.maxY > maxY) s.shapeToDraw().bounds2D.maxY else maxY
+            minX = if (s.boundBox().minX < minX) s.boundBox().minX else minX
+            minY = if (s.boundBox().minY < minY) s.boundBox().minY else minY
+            maxX = if (s.boundBox().maxX > maxX) s.boundBox().maxX else maxX
+            maxY = if (s.boundBox().maxY > maxY) s.boundBox().maxY else maxY
         }
 
         val w = maxX - minX
         val h = maxY - minY
         return Rectangle2D.Double(minX, minY, w, h)
+    }
+
+    fun isEmpty() = mCurvesList.isEmpty()
+
+    fun unselectCurves() {
+        for (s in mCurvesList) {
+            s.isSelected = false
+        }
+    }
+
+    fun deleteSelectedCurves() {
+        if (mCurvesList.isEmpty())
+            return
+
+        val iterator = mCurvesList.iterator()
+        for (i in iterator) {
+            if (i.isSelected) {
+                iterator.remove()
+            }
+        }
+    }
+
+    fun snap2Curve(pt: Point2D, tolerance: Double): Point2D {
+        if (isEmpty())
+            return pt
+
+        var dmin = tolerance
+        var d: Double
+        var ptClosest: Point2D = pt
+        for (c in mCurvesList) {
+            var xC = c.mPtInit.x
+            var yC = c.mPtInit.y
+            if (abs(pt.x - xC) < tolerance && abs(pt.x - xC) < tolerance) {
+                d = dist2Points(pt, c.mPtInit)
+                if (d < dmin) {
+                    ptClosest = Point2D.Double(xC, yC)
+                    dmin = d
+                }
+                continue
+            }
+
+            xC = c.mPtEnd.x
+            yC = c.mPtEnd.y
+            if (abs(pt.x - xC) < tolerance && abs(pt.y - yC) < tolerance) {
+                d = dist2Points(pt, c.mPtEnd)
+                if (d < dmin) {
+                    ptClosest = Point2D.Double(xC, yC)
+                    dmin = d
+                }
+                continue
+            }
+
+            val dist_closestPoint = c.closestPoint(pt)
+            d = dist_closestPoint.first
+            xC = dist_closestPoint.second.x
+            yC = dist_closestPoint.second.y
+            if (d < dmin) {
+                ptClosest = dist_closestPoint.second
+                dmin = d
+            }
+        }
+
+        return ptClosest
+
     }
 }
 

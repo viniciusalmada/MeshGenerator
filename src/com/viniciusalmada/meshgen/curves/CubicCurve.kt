@@ -1,9 +1,6 @@
 package com.viniciusalmada.meshgen.curves
 
-import com.viniciusalmada.meshgen.utils.ERROR_FOUR_POINTS_ONLY
-import com.viniciusalmada.meshgen.utils.ERROR_ONE_OR_TWO_OR_THREE_POINT_TO_EXIST
-import com.viniciusalmada.meshgen.utils.plus
-import com.viniciusalmada.meshgen.utils.times
+import com.viniciusalmada.meshgen.utils.*
 import java.awt.Shape
 import java.awt.geom.CubicCurve2D
 import java.awt.geom.Line2D
@@ -11,21 +8,14 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import kotlin.math.pow
 
-class CubicCurve() : Curve() {
+class CubicCurve : Curve() {
 
     override var mTotalPoints: Int = 4
 
-    constructor(ptInit: Point2D.Double, ptCtrl1: Point2D.Double, ptCtrl2: Point2D.Double, ptEnd: Point2D.Double) : this() {
-        this.mPtInit = ptInit
-        this.mPtCtrl1 = ptCtrl1
-        this.mPtCtrl2 = ptCtrl2
-        this.mPtEnd = ptEnd
-    }
+    private lateinit var mPtCtrl1: Point2D
+    private lateinit var mPtCtrl2: Point2D
 
-    private var mPtCtrl1 = Point2D.Double()
-    private var mPtCtrl2 = Point2D.Double()
-
-    override fun addPoint(point: Point2D.Double) {
+    override fun addPoint(point: Point2D) {
         when (mPointsCount) {
             0 -> mPtInit = point
             1 -> mPtEnd = point
@@ -34,13 +24,21 @@ class CubicCurve() : Curve() {
             else -> throw RuntimeException(ERROR_FOUR_POINTS_ONLY)
         }
         mPointsCount++
+
+        if (mPointsCount == mTotalPoints) {
+            for (i in 0..DISCRETE_CURVE_POINTS) {
+                val t = i.toDouble() / DISCRETE_CURVE_POINTS.toDouble()
+                val pt = pointAtParam(t)
+                mPoints.add(pt)
+            }
+        }
     }
 
     override fun shapeToDraw(): Shape {
         return CubicCurve2D.Double(mPtInit.x, mPtInit.y, mPtCtrl1.x, mPtCtrl1.y, mPtCtrl2.x, mPtCtrl2.y, mPtEnd.x, mPtEnd.y)
     }
 
-    override fun shapeToDraw(tempPt: Point2D.Double): Shape {
+    override fun shapeToDraw(tempPt: Point2D): Shape {
         return when (mPointsCount) {
             1 -> Line2D.Double(mPtInit, tempPt)
             2 -> CubicCurve2D.Double(mPtInit.x, mPtInit.y, tempPt.x, tempPt.y, tempPt.x, tempPt.y, mPtEnd.x, mPtEnd.y)
@@ -49,10 +47,10 @@ class CubicCurve() : Curve() {
         }
     }
 
-    override fun pointAtParam(t: Double): Point2D.Double {
+    override fun pointAtParam(t: Double): Point2D {
         return when {
-            t < 0.0 -> mPtInit
-            t > 1.0 -> mPtEnd
+            t <= 0.0 -> mPtInit
+            t >= 1.0 -> mPtEnd
             else -> mPtInit * -(t - 1).pow(3) +
                     mPtCtrl1 * 3.0 * t * (t - 1).pow(2) +
                     mPtCtrl2 * -t.pow(2) * (3 * t - 3) +
@@ -60,9 +58,13 @@ class CubicCurve() : Curve() {
         }
     }
 
-    override fun intersectWithTolerance(point: Point2D.Double, tolerance: Double): Boolean {
-        val cCurve = CubicCurve2D.Double(mPtInit.x, mPtInit.y, mPtCtrl1.x, mPtCtrl1.y, mPtCtrl2.x, mPtCtrl2.y, mPtEnd.x, mPtEnd.y)
+    override fun intersectWithTolerance(point: Point2D, tolerance: Double): Boolean {
         val rectTol = Rectangle2D.Double(point.x - tolerance / 2, point.y - tolerance / 2, tolerance, tolerance)
-        return cCurve.intersects(rectTol)
+        for (i in 0 until mPoints.size - 1) {
+            val line = Line2D.Double(mPoints[i], mPoints[i + 1])
+            if (line.intersects(rectTol))
+                return true
+        }
+        return false
     }
 }

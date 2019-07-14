@@ -7,14 +7,19 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.image.BufferedImage
 import kotlin.math.atan
+import kotlin.math.pow
 import kotlin.math.sqrt
 
-operator fun Point2D.plus(point2D: Point2D): Point2D.Double {
+operator fun Point2D.plus(point2D: Point2D): Point2D {
     return Point2D.Double(this.x + point2D.x, this.y + point2D.y)
 }
 
-operator fun Point2D.times(factor: Double): Point2D.Double {
+operator fun Point2D.times(factor: Double): Point2D {
     return Point2D.Double(this.x * factor, this.y * factor)
+}
+
+operator fun Point2D.minus(p2: Point2D): Point2D {
+    return Point2D.Double(this.x - p2.x, this.y - p2.y)
 }
 
 fun dist2Points(p1: Point2D, p2: Point2D): Double {
@@ -53,4 +58,12 @@ fun getBlankCursor(): Cursor {
 
 fun getDefaultCursor(): Cursor {
     return Cursor(Cursor.DEFAULT_CURSOR)
+}
+
+fun Point2D.dotProd(p2: Point2D): Double {
+    return this.x * p2.x + this.y * p2.y
+}
+
+fun Point2D.norm(): Double {
+    return sqrt(this.x.pow(2) + this.y.pow(2))
 }

@@ -20,14 +20,14 @@ class CurveCollector(val mCurveType: CurveType) {
         }
     }
 
-    fun addPoint(point: Point2D.Double) {
+    fun addPoint(point: Point2D) {
         mCurve?.addPoint(point)
         if (mCurve?.isCurveComplete()!!) {
             isCurveAlreadyCollected = true
         }
     }
 
-    fun tempCurve(point: Point2D.Double): Shape? {
+    fun tempCurve(point: Point2D): Shape? {
         return mCurve?.shapeToDraw(point)
     }
 

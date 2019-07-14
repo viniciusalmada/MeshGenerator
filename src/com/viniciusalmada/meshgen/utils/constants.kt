@@ -53,6 +53,7 @@ const val ZERO = 0
 const val ZERO_DOUBLE = 0.0
 const val PAN_POSITIVE_FACTOR = -0.05
 const val PAN_NEGATIVE_FACTOR = 0.05
+const val DISCRETE_CURVE_POINTS = 50
 
 /* FORMATS */
 const val TWO_DECIMALS_FORMAT = "%.2f"
