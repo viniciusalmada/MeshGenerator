@@ -1,6 +1,10 @@
 package com.viniciusalmada.meshgen.curves
 
-import com.viniciusalmada.meshgen.utils.*
+import com.viniciusalmada.meshgen.utils.DISCRETE_CURVE_POINTS
+import com.viniciusalmada.meshgen.utils.ERROR_FOUR_POINTS_ONLY
+import com.viniciusalmada.meshgen.utils.ERROR_ONE_OR_TWO_OR_THREE_POINT_TO_EXIST
+import com.viniciusalmada.meshgen.utils.plus
+import com.viniciusalmada.meshgen.utils.times
 import java.awt.Shape
 import java.awt.geom.CubicCurve2D
 import java.awt.geom.Line2D

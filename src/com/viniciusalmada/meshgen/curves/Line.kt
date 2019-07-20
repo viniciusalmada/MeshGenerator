@@ -1,6 +1,13 @@
 package com.viniciusalmada.meshgen.curves
 
-import com.viniciusalmada.meshgen.utils.*
+import com.viniciusalmada.meshgen.utils.ERROR_ONE_POINT_TO_EXIST
+import com.viniciusalmada.meshgen.utils.ERROR_TWO_POINTS_ONLY
+import com.viniciusalmada.meshgen.utils.dist2Points
+import com.viniciusalmada.meshgen.utils.dotProd
+import com.viniciusalmada.meshgen.utils.minus
+import com.viniciusalmada.meshgen.utils.norm
+import com.viniciusalmada.meshgen.utils.plus
+import com.viniciusalmada.meshgen.utils.times
 import java.awt.Shape
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
@@ -28,6 +35,10 @@ class Line : Curve() {
         val maxX = max(mPtInit.x, mPtEnd.x)
         val maxY = max(mPtInit.y, mPtEnd.y)
         return Rectangle2D.Double(x, y, maxX - x, maxY - y)
+    }
+
+    override fun getDiscreteCurve(scaleFactor: Double): Shape {
+        return shapeToDraw()
     }
 
     override fun addPoint(point: Point2D) {

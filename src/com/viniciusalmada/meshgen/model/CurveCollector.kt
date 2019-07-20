@@ -1,6 +1,10 @@
 package com.viniciusalmada.meshgen.model
 
-import com.viniciusalmada.meshgen.curves.*
+import com.viniciusalmada.meshgen.curves.ArcCircle
+import com.viniciusalmada.meshgen.curves.CubicCurve
+import com.viniciusalmada.meshgen.curves.Curve
+import com.viniciusalmada.meshgen.curves.Line
+import com.viniciusalmada.meshgen.curves.QuadCurve
 import com.viniciusalmada.meshgen.utils.CurveType
 import java.awt.Shape
 import java.awt.geom.Point2D

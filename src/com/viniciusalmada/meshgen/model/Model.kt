@@ -52,7 +52,7 @@ class Model {
                 d = dist2Points(pt, c.mPtInit)
                 if (d < dmin) {
                     ptClosest = Point2D.Double(xC, yC)
-                    dmin = d
+//                    dmin = d
                 }
                 continue
             }
@@ -63,7 +63,7 @@ class Model {
                 d = dist2Points(pt, c.mPtEnd)
                 if (d < dmin) {
                     ptClosest = Point2D.Double(xC, yC)
-                    dmin = d
+//                    dmin = d
                 }
                 continue
             }
