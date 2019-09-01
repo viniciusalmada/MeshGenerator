@@ -102,6 +102,14 @@ class Model {
         val h = maxY - minY
         return Rectangle2D.Double(minX, minY, w, h)
     }
+
+    fun selectCurves(fence: Rectangle2D) {
+        for (c in mCurvesList){
+            if (fence.contains(c.boundBox())){
+                c.isSelected = true
+            }
+        }
+    }
 }
 
 

@@ -5,8 +5,11 @@ import java.awt.Point
 import java.awt.Toolkit
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import kotlin.math.atan
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -66,4 +69,12 @@ fun getBlankCursor(): Cursor {
 
 fun getDefaultCursor(): Cursor {
     return Cursor(Cursor.DEFAULT_CURSOR)
+}
+
+fun rectFromTwoPoints(p1: Point2D, p2: Point2D): Rectangle2D{
+    val x0: Double = min(p1.x, p2.x)
+    val y0: Double = min(p1.y, p2.y)
+    val w = max(p1.x, p2.x) - x0
+    val h = max(p1.y, p2.y) - y0
+    return Rectangle2D.Double(x0,y0,w,h)
 }

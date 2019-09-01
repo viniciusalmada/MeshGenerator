@@ -56,7 +56,7 @@ import javax.swing.SwingConstants
 import javax.swing.WindowConstants
 
 
-class AppFrame(mModel: Model) : JFrame(APP_TITLE) {
+class AppFrame(val mModel: Model) : JFrame(APP_TITLE) {
 	private val mCanvas: CanvasComponent = CanvasComponent(this, mModel)
 	private val mFitButton: JButton = JButton(FIT_BUTTON_TITLE)
 	private val mZoomInButton: JButton = JButton(ZOOM_IN_BUTTON_TITLE)
@@ -269,6 +269,7 @@ class AppFrame(mModel: Model) : JFrame(APP_TITLE) {
 
 	private fun onSelectButtonClickListener() {
 		mCanvas.mCanvasMode = CanvasMode.SELECT_MODE
+		mModel.unselectCurves()
 		mLabelStatus.text = "Select a curve"
 	}
 

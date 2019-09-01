@@ -8,6 +8,7 @@ import com.viniciusalmada.meshgen.utils.WorldLimits
 import com.viniciusalmada.meshgen.utils.getBlankCursor
 import com.viniciusalmada.meshgen.utils.getDefaultCursor
 import com.viniciusalmada.meshgen.utils.plus
+import com.viniciusalmada.meshgen.utils.rectFromTwoPoints
 import com.viniciusalmada.meshgen.utils.times
 import java.awt.BasicStroke
 import java.awt.Color
@@ -48,10 +49,12 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 	private var isComponentReady: Boolean = false
 	private var isCollecting: Boolean = false
 	private var isMidMouseButtonPressed: Boolean = false
+	private var isLeftMouseButtonPressed: Boolean = false
 	private var isCursorOnCanvas: Boolean = false
 	private var isLimitsUpToDate: Boolean = false
-	private val mLimits: WorldLimits = WorldLimits(-1.0, 11.0, 11.0, -1.0)
 	private var mCurrentMousePosition: Point2D = Point2D.Double()
+	private var mFenceRectangle2D: Rectangle2D = Rectangle2D.Double()
+	private val mLimits: WorldLimits = WorldLimits(-1.0, 11.0, 11.0, -1.0)
 
 	private lateinit var mPointPressedInWorld: Point2D
 	private lateinit var mTempCollectedCurve: Shape
@@ -105,6 +108,8 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 
 		displayGrid(g2)
 
+		drawFence(g2)
+
 		if (isCollecting) {
 			g2.paint = Color.RED
 			g2.draw(mTempCollectedCurve)
@@ -139,18 +144,37 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 	override fun mouseDragged(e: MouseEvent?) {
 		if (e == null) return
 
-		if (isMidClick(e)) {
-			val worldPoint = convertCanvasPointToWorldPoint(e.point)
-			val diffX = mPointPressedInWorld.x - worldPoint.x
-			val diffY = mPointPressedInWorld.y - worldPoint.y
+		setupCurrentMousePosition(e.point)
+
+		mAppFrame.updateCoordinates(mCurrentMousePosition.x, mCurrentMousePosition.y)
+
+		val currWorldPoint = convertCanvasPointToWorldPoint(e.point)
+
+		if (isMidMouseButtonClick(e)) {
+			val diffX = mPointPressedInWorld.x - currWorldPoint.x
+			val diffY = mPointPressedInWorld.y - currWorldPoint.y
 			panAbs(diffX, diffY)
+		}
+
+		if (isLeftMouseButtonClick(e)) {
+			mFenceRectangle2D = rectFromTwoPoints(mPointPressedInWorld, currWorldPoint)
+			println(mFenceRectangle2D)
+			repaint()
 		}
 	}
 
 	override fun mouseReleased(e: MouseEvent?) {
 		if (e == null) return
 
-		if (isMidClick(e)) isMidMouseButtonPressed = false
+		if (isMidMouseButtonClick(e)) isMidMouseButtonPressed = false
+
+		if (isLeftMouseButtonClick(e)) {
+			isLeftMouseButtonPressed = false
+			mModel.unselectCurves()
+			mModel.selectCurves(mFenceRectangle2D)
+		}
+
+		repaint()
 	}
 
 	override fun mouseEntered(e: MouseEvent?) {
@@ -182,7 +206,8 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 			repaint()
 
 		} else if (mCanvasMode == CanvasMode.CREATE_MODE) {
-			if (isRightClick(e)) {
+			mModel.unselectCurves()
+			if (isRightMouseButtonClick(e)) {
 				isCollecting = false
 				mCurveCollector.reset()
 				return
@@ -207,10 +232,15 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 	override fun mousePressed(e: MouseEvent?) {
 		if (e == null) return
 
-		if (isMidClick(e)) {
+		if (isMidMouseButtonClick(e)) {
 			isMidMouseButtonPressed = true
-			mPointPressedInWorld = convertCanvasPointToWorldPoint(e.point)
 		}
+
+		if (isLeftMouseButtonClick(e)) {
+			isLeftMouseButtonPressed = true
+		}
+
+		mPointPressedInWorld = convertCanvasPointToWorldPoint(e.point)
 	}
 
 	override fun mouseWheelMoved(e: MouseWheelEvent?) {
@@ -262,6 +292,19 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 			g2.paint = Color.BLUE
 			cursor.drawCreateCursor(g2)
 		}
+		g2.paint = paintBkp
+	}
+
+	private fun drawFence(g2: Graphics2D) {
+		if (!isLeftMouseButtonPressed) return
+
+		if (mCanvasMode != CanvasMode.SELECT_MODE) return
+
+		val paintBkp = g2.paint
+		g2.paint = Color.CYAN
+
+		g2.draw(mFenceRectangle2D)
+
 		g2.paint = paintBkp
 	}
 
@@ -392,11 +435,15 @@ class CanvasComponent(private val mAppFrame: AppFrame, private val mModel: Model
 		return SwingUtilities.isMiddleMouseButton(e) && e.clickCount == 2
 	}
 
-	private fun isMidClick(e: MouseEvent): Boolean {
+	private fun isLeftMouseButtonClick(e: MouseEvent): Boolean {
+		return SwingUtilities.isLeftMouseButton(e)
+	}
+
+	private fun isMidMouseButtonClick(e: MouseEvent): Boolean {
 		return SwingUtilities.isMiddleMouseButton(e)
 	}
 
-	private fun isRightClick(e: MouseEvent): Boolean {
+	private fun isRightMouseButtonClick(e: MouseEvent): Boolean {
 		return SwingUtilities.isRightMouseButton(e)
 	}
 
